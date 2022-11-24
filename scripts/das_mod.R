@@ -1,7 +1,7 @@
 library(dplyr)
 library(sf)
 library(areal)
-source("decompose.R")
+source("functions/decompose.R")
 
 obwody_df <- read.csv("data/obwody_df.csv")
 
