@@ -72,7 +72,6 @@ clc <- ggplot(results, aes(x = clc_err, y = POP)) +
 
 pktadr <- ggplot(results, aes(x = pktadr_err, y = POP)) +
   geom_bin_2d(binwidth = 22) +
-  scale_fill_continuous(name = "Ilość") +
   theme_linedraw() +
   labs(title = "Punkty adresowe", y = "Populacja", x = "Błąd")
 
@@ -89,11 +88,13 @@ ua <- ggplot(results, aes(x = ua_err, y = POP)) +
 
 grid.arrange(bdot, clc, pktadr, ua, ncol=2)
 
-tm_shape(results_sf, bbox = st_bbox(c(xmin = 324682.4185, xmax = 490552.8874, ymax = 392897.5283, ymin = 522945.1219), crs = st_crs(2180))) +
-  tm_polygons(col = "clc_err", border.alpha = 0.2) +
-  tm_view(set.view = 5)
+smol <- tm_shape(results_sf, bbox = st_bbox(c(xmin = 352682.4185, xmax = 365552.8874, ymax = 498897.5283, ymin = 512945.1219), crs = st_crs(2180))) +
+  tm_polygons(col = "clc_err", border.alpha = 0.2)
 
+big <- tm_shape(results_sf) +
+  tm_polygons(col = "clc_err", border.alpha = 0.2)
 
+tmap_arrange(big, smol, ncol=2)
 
-tm_shape(results_sf) +
-  tm_polygons(col = "ua_err")
+tm_shape(pktadr)+
+  tm_dots()

@@ -10,9 +10,10 @@ pth_pktadr = "initial-data/punkty_adresowe.gpkg"
 pth_ua = "initial-data/PL005L2_POZNAN_UA2012_revised_v021.gpkg"
 
 ##### Wczytanie danych
+# Obwody spisowe i rejony statystyczne
 obwody <- read_data(pth_obwody, crs = 2180) #wczytanie obwodów spisowych
 
-rejony <- obwody %>% #grupowanie obwodów do rejonów spisowych
+rejony <- obwody %>% #grupowanie obwodów do rejonów statystycznych
   group_by(REJ) %>% 
   summarize() %>% 
   ungroup()
