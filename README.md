@@ -1,13 +1,5 @@
 # Struktura projektu
 
--   [functions](###functions)
-
--   [initial-data](###initial-data)
-
--   [scripts](###scripts)
-
--   [main.R](###main.R)
-
 ### functions
 
 dir; zawiera wszystkie zdefiniowane funkcje na potrzeby pracy
