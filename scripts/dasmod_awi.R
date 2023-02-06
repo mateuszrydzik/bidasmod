@@ -1,7 +1,5 @@
 library(dplyr)
-library(sf)
 library(areal)
-library(tmap)
 source("functions/decompose.R")
 
 ### Modelowanie dazymetryczne

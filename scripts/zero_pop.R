@@ -1,3 +1,4 @@
+library(tmap)
 source("functions/err_measures.R")
 
 # Utworzenie tabeli z obwodami, których wejściowe obserwacje nie posiadały 
@@ -24,13 +25,29 @@ data.frame(
   ua=zeropop_err(results$ua_pop, results$POP)
 )
 
+#  Przestrzenny rozkład obwodów o błędnej klasyfikacji obszarów zurbanizowanych
+zeropop_clc <- tm_shape(results_sf) +
+  tm_fill(col = "gray") +
+tm_shape(results_sf[results_sf$clc_pop == 0 &results_sf$POP > 0,]) +
+  tm_fill(col="red") +
+  tm_layout(title = "CLC")
 
+zeropop_bdot <- tm_shape(results_sf) +
+  tm_fill(col = "gray") +
+tm_shape(results_sf[results_sf$bdot_pop == 0 &results_sf$POP > 0,]) +
+  tm_fill(col="red") +
+  tm_layout(title = "BDOT")  
+      
+zeropop_pa <- tm_shape(results_sf) +
+  tm_fill(col = "gray") +
+tm_shape(results_sf[results_sf$pktadr_pop == 0 &results_sf$POP > 0,]) +
+  tm_fill(col="red") +
+  tm_layout(title = "Pkt. adr.")  
 
-library(tmap)
-tmap_mode("view")
+zeropop_ua <- tm_shape(results_sf) +
+  tm_fill(col = "gray") +
+tm_shape(results_sf[results_sf$ua_pop == 0 &results_sf$POP > 0,]) +
+  tm_fill(col="red") +
+  tm_layout(title = "UA")  
 
-results_sf <- st_as_sf(results)
-
-tm_shape(results_sf[results_sf$POP == 0,]) +
-  tm_polygons(col = "clc_pop")
-
+tmap_arrange(zeropop_bdot, zeropop_clc, zeropop_pa, zeropop_ua, ncol=2)

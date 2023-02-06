@@ -1,8 +1,23 @@
-library(dplyr)
 library(tmap)
+library(ggplot2)
+library(gridExtra)
+library(sf)
 source("functions/err_measures.R")
 
-# Obliczenie błędów szacunku dla każdego zbioru
+# Obliczenie statystyk opisowych dla wyników modelowania
+
+results_summary <- cbind(summary(results$bdot_err, digits=2),
+                         summary(results$clc_err, digits=2),
+                         summary(results$pktadr_err, digits=2),
+                         summary(results$ua_err, digits=2),
+                         summary(results$awi_err, digits=2))
+colnames(results_summary) <- c("BDOT" , "CLC", "PA", "UA", "AWI")
+
+results_sd <- c(sd(results$bdot_err), sd(results$clc_err), sd(results$pktadr_err), sd(results$ua_err), sd(results$awi_err))
+names(results_sd) <-c("BDOT" , "CLC", "PA", "UA", "AWI")
+
+
+# Obliczenie błędu estymacji dla każdego zbioru
 
 results$clc_err <- results$POP - results$clc_pop
 results$ua_err <- results$POP - results$ua_pop
@@ -10,41 +25,50 @@ results$bdot_err <- results$POP - results$bdot_pop
 results$pktadr_err <- results$POP - results$pktadr_pop
 results$awi_err <- results$POP - results$awi_pop
 
-# Porównanie wyników modelowania dazymetrycznego z metodą powierzchniowo-wagową
 
-library(ggplot2)
-library(gridExtra)
+# Porównanie wyników modelowania dazymetrycznego z metodą powierzchniowo-wagową
 
 bdot <- ggplot(results, aes(x = bdot_err)) +
   geom_histogram(binwidth = 22)+
   theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  theme(text = element_text(size = 14)) +
   labs(title = "BDOT", y = "Obserwacje", x = "Błąd")
 
 clc <- ggplot(results, aes(x = clc_err)) +
   geom_histogram(binwidth = 22)+
   theme_linedraw() +
-  labs(title = "CLC", y = "Obserwacje", x = "Błąd")
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  scale_y_continuous(limits = c(0, 600)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Corine Land Cover", y = "Obserwacje", x = "Błąd")
 
 pa <- ggplot(results, aes(x = pktadr_err)) +
   geom_histogram(binwidth = 22)+
   theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  theme(text = element_text(size = 14)) +
   labs(title = "Punkty adresowe", y = "Obserwacje", x = "Błąd")
 
 ua <- ggplot(results, aes(x = ua_err)) +
   geom_histogram(binwidth = 22)+
   theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  scale_y_continuous(limits = c(0, 600)) +
+  theme(text = element_text(size = 14)) +
   labs(title = "Urban Atlas", y = "Obserwacje", x = "Błąd")
 
 int <- ggplot(results, aes(x = awi_err)) +
   geom_histogram(binwidth = 22)+
   theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  scale_y_continuous(limits = c(0, 600)) +
+  theme(text = element_text(size = 14)) +
   labs(title = "Metoda pow-wag", y = "Obserwacje", x = "Błąd")
 
-grid.arrange(clc, ua, bdot, pa, int, ncol=3)
+grid.arrange(bdot, clc, pa, ua, int, ncol=3)
 
-
-# Porownanie wyników modelowania dazymetrycznego z oryginalnymi dla obszarow spisowych
-# Ocena bledow za pomocą wskaźników
+# Wskaźniki oceny błędów 
 
 data.frame(
   BDOT=c(mpe(results$bdot_err), rmse(results$bdot_err), r2(results$POP, results$bdot_pop)),
@@ -54,47 +78,113 @@ data.frame(
   AWI=c(mpe(results$awi_err), rmse(results$awi_err), r2(results$POP, results$awi_err)),
   row.names = c("MPE", "RMSE", "R2"))
 
-tm_shape(results) +
-  tm_polygons(col = "clc_err")
-
-#2d density plots
+# Dwuwymiarowe histogramy - zależność między populacją a błędem estymacji
 bdot <- ggplot(results, aes(x = bdot_err, y = POP)) +
-  geom_bin_2d(binwidth = 22) +
-  scale_fill_continuous(name = "Ilość") +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość") +
   theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  theme(text = element_text(size = 14)) +
   labs(title = "BDOT", y = "Populacja", x = "Błąd")
 
 clc <- ggplot(results, aes(x = clc_err, y = POP)) +
-  geom_bin_2d(binwidth = 22) +
-  scale_fill_continuous(name = "Ilość") +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość") +
   theme_linedraw() +
-  labs(title = "CLC", y = "Populacja", x = "Błąd")
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Corine Land Cover", y = "Populacja", x = "Błąd")
 
 pktadr <- ggplot(results, aes(x = pktadr_err, y = POP)) +
-  geom_bin_2d(binwidth = 22) +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość") +
   theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  theme(text = element_text(size = 14)) +
   labs(title = "Punkty adresowe", y = "Populacja", x = "Błąd")
 
 ua <- ggplot(results, aes(x = ua_err, y = POP)) +
-  geom_bin_2d(binwidth = 22) +
-  scale_fill_continuous(name = "Ilość") +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość") +
   theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  theme(text = element_text(size = 14)) +
   labs(title = "Urban Atlas", y = "Populacja", x = "Błąd")
 
-#int <- ggplot(results, aes(x = awi_err)) +
-#  geom_histogram(binwidth = 22)+
-#  theme_bw() +
-#  labs(title = "Metoda pow-wag", y = "Obserwacje", x = "Błąd")
+int <- ggplot(results, aes(x = awi_err, y = POP)) +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość") +
+  theme_linedraw() +
+  scale_x_continuous(limits = c(-1500, 1000)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Metoda pow-wag", y = "Obserwacje", x = "Błąd")
 
-grid.arrange(bdot, clc, pktadr, ua, ncol=2)
+grid.arrange(bdot, clc, pktadr, ua, int, ncol=2)
 
-smol <- tm_shape(results_sf, bbox = st_bbox(c(xmin = 352682.4185, xmax = 365552.8874, ymax = 498897.5283, ymin = 512945.1219), crs = st_crs(2180))) +
-  tm_polygons(col = "clc_err", border.alpha = 0.2)
+### przestrzenne mapy rozkladu błędu
 
-big <- tm_shape(results_sf) +
-  tm_polygons(col = "clc_err", border.alpha = 0.2)
+results_sf <- st_as_sf(results)
 
-tmap_arrange(big, smol, ncol=2)
+# BDOT 
+fua_bdot <- tm_shape(results_sf) +
+  tm_polygons(col = "bdot_err", title="Błąd", border.alpha = 0.2, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
 
-tm_shape(pktadr)+
-  tm_dots()
+poz_bdot <- tm_shape(results_sf, 
+                     bbox = st_bbox(c(xmin = 345343.8710092928, xmax = 369175.0948500195,
+                                      ymax = 517691.1373427557, ymin = 494191.43407221045), 
+                                    crs = st_crs(2180))) +
+  tm_polygons(col = "bdot_err", border.alpha = 0.2, legend.show = F, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
+
+tmap_arrange(fua_bdot, poz_bdot, ncol=2)
+
+# CLC
+fua_clc <- tm_shape(results_sf) +
+  tm_polygons(col = "clc_err", title="Błąd", border.alpha = 0.2, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
+
+poz_bdot <- tm_shape(results_sf, 
+                     bbox = st_bbox(c(xmin = 345343.8710092928, xmax = 369175.0948500195,
+                                      ymax = 517691.1373427557, ymin = 494191.43407221045), 
+                                    crs = st_crs(2180))) +
+  tm_polygons(col = "clc_err", border.alpha = 0.2, legend.show = F, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
+
+tmap_arrange(fua_clc, poz_clc, ncol=2)
+
+# Pkt Adr
+fua_pa <- tm_shape(results_sf) +
+  tm_polygons(col = "pktadr_err", title="Błąd", border.alpha = 0.2, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
+
+poz_pa <- tm_shape(results_sf, 
+                   bbox = st_bbox(c(xmin = 345343.8710092928, xmax = 369175.0948500195,
+                                    ymax = 517691.1373427557, ymin = 494191.43407221045), 
+                                  crs = st_crs(2180))) +
+  tm_polygons(col = "pktadr_err", border.alpha = 0.2, legend.show = F, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
+
+tmap_arrange(fua_pa, poz_pa, ncol=2)
+
+# UA
+fua_ua <- tm_shape(results_sf) +
+  tm_polygons(col = "ua_err", title="Błąd", border.alpha = 0.2, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
+
+poz_ua <- tm_shape(results_sf, 
+                   bbox = st_bbox(c(xmin = 345343.8710092928, xmax = 369175.0948500195,
+                                    ymax = 517691.1373427557, ymin = 494191.43407221045), 
+                                  crs = st_crs(2180))) +
+  tm_polygons(col = "ua_err", border.alpha = 0.2, legend.show = F, palette = "RdGy") +
+  tm_scale_bar(position=c("left", "bottom"), text.size = 0.8) +
+  tm_compass(position = c("right", "top"))
+
+tmap_arrange(fua_ua, poz_ua, ncol=2)
