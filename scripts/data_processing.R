@@ -13,12 +13,12 @@ pth_ua = "initial-data/PL005L2_POZNAN_UA2012_revised_v021.gpkg"
 # Obwody spisowe i rejony statystyczne
 obwody <- read_data(pth_obwody, crs = 2180) #wczytanie obwodów spisowych
 
-rejony <- obwody %>% #grupowanie obwodów do rejonów statystycznych
+rejony <- obwody %>% #Grupowanie obwodów do rejonow statystycznych
   group_by(REJ) %>% 
   summarize() %>% 
   ungroup()
 
-# Baza Danych Obiektów Topograficznych
+# Baza Danych Obiektow Topograficznych
 bdot <- read_data(pth_bdot)
 
 # Corine Land Cover
@@ -39,11 +39,13 @@ bdot_area <- st_intersection(bdot, obwody) %>%
   mutate(bdot_area = st_area(.)) %>% 
   dplyr::select(OBWOD, REJ, bdot_area) %>% st_drop_geometry()
 
-# W niektorych obwodach dane pomocnicze występują w formie multipoligonu, co prowadzi do wystepowania kilku rekordów tego samego obwodu. Ta operacja sumuje powierzchnie do jednego rekordu obwodu.
+# W niektorych obwodach dane pomocnicze występują w formie multipoligonu, co 
+# prowadzi do wystepowania kilku rekordów tego samego obwodu. 
+# Ta operacja sumuje powierzchnie do jednego rekordu obwodu.
 bdot_area_o <- aggregate(bdot_area$bdot_area, by = list(bdot_area$OBWOD), FUN = sum)
 colnames(bdot_area_o) <- c("OBWOD", "bdot_area")
 
-#Agregacja powierzchni zurbanizowanej do rejonów spisowych.
+#Agregacja powierzchni zurbanizowanej do rejonow spisowych.
 bdot_area_r <- aggregate(bdot_area$bdot_area, by = list(bdot_area$REJ), FUN = sum)
 colnames(bdot_area_r) <- c("REJ", "bdot_area_r")
 
@@ -80,11 +82,12 @@ colnames(ua_area_o) <- c("OBWOD", "ua_area")
 ua_area_r <- aggregate(ua_area$ua_area, by = list(ua_area$REJ), FUN = sum)
 colnames(ua_area_r) <- c("REJ", "ua_area_r")
 
-# Agregacja populacji z obwodów do rejonów statystycznych
+# Agregacja populacji z obwodow do rejonow statystycznych
 rejony_pop <- aggregate(obwody$TOTAL_POP, by = list(obwody$REJ), FUN = sum)
 colnames(rejony_pop) <- c("REJ", "TOTAL_POP_R")
 
-#### Wygenerowanie tabeli zawierającej powierzchnie danych pomocniczych dla obwodów oraz rejonów spisowych
+# Wygenerowanie tabeli zawierającej powierzchnie danych pomocniczych
+# dla obwodow oraz rejonow
 obwody_df <- st_drop_geometry(obwody) %>% 
   merge(bdot_area_o, by = "OBWOD", all = T) %>% 
   merge(bdot_area_r, by = "REJ", all = T) %>% 
@@ -97,8 +100,9 @@ obwody_df <- st_drop_geometry(obwody) %>%
   merge(rejony_pop, by = "REJ", all = T) %>% 
   dplyr::select(OBWOD, REJ, bdot_area, clc_area, ua_area, pktadr_count, bdot_area_r, clc_area_r,  ua_area_r, pktadr_count_r, TOTAL_POP, TOTAL_POP_R)
 
-# Obwody, ktore nie pokrywaly sie z danymi pomocniczymi, nie zostaly zaliczone do wynikowej tabeli. Ta operacja dołącza pozostałe obwody i przypisuje im wartość 0.
+# Obwody, ktore nie pokrywaly sie z danymi pomocniczymi, nie zostaly zaliczone do wynikowej tabeli.
+# Ta operacja dolacza pozostałe obwody i przypisuje im wartość 0.
 obwody_df[is.na(obwody_df)]  <- 0
 
-# Możliwy eksport tabeli do pliku csv.
+# Mozliwy eksport tabeli do pliku csv.
 #write.csv(obwody_df, "obwody_df.csv", row.names = F)

@@ -1,13 +1,11 @@
 library(tmap)
 source("functions/err_measures.R")
 
-# Utworzenie tabeli z obwodami, których wejściowe obserwacje nie posiadały 
-# populacji
-
+# Wyodrebnienie obwodow z obserwowana zerowa populacja
 popZero <- results[results$POP==0, ]
 
-# Zestawienie ilości obwodów o zerowej liczbie populacji dla obserwacji oraz 
-# wyników modelowania
+# Zestawienie ilosci obwodow o zerowej liczbie populacji dla obserwacji oraz 
+# wynikow modelowania
 data.frame(
   obs=length(popZero$POP),
   bdot=length(popZero$bdot_pop[popZero$bdot_pop>0]),
@@ -17,7 +15,7 @@ data.frame(
   awi=length(popZero$awi_pop[popZero$awi_pop>0])
 )
 
-# Zestawienie wartości wskaźnika błędnej klasyfikacji obszarów zurbanizowanych
+# Zestawienie wartości wskaznika blednej klasyfikacji obszarow zurbanizowanych
 data.frame(
   bdot=zeropop_err(results$bdot_pop, results$POP),
   clc=zeropop_err(results$clc_pop, results$POP),
@@ -25,19 +23,19 @@ data.frame(
   ua=zeropop_err(results$ua_pop, results$POP)
 )
 
-#  Przestrzenny rozkład obwodów o błędnej klasyfikacji obszarów zurbanizowanych
+# Przestrzenny rozklad obwodow o blednej klasyfikacji obszarow zurbanizowanych
+zeropop_bdot <- tm_shape(results_sf) +
+  tm_fill(col = "gray") +
+  tm_shape(results_sf[results_sf$bdot_pop == 0 &results_sf$POP > 0,]) +
+  tm_fill(col="red") +
+  tm_layout(title = "BDOT") 
+
 zeropop_clc <- tm_shape(results_sf) +
   tm_fill(col = "gray") +
 tm_shape(results_sf[results_sf$clc_pop == 0 &results_sf$POP > 0,]) +
   tm_fill(col="red") +
   tm_layout(title = "CLC")
 
-zeropop_bdot <- tm_shape(results_sf) +
-  tm_fill(col = "gray") +
-tm_shape(results_sf[results_sf$bdot_pop == 0 &results_sf$POP > 0,]) +
-  tm_fill(col="red") +
-  tm_layout(title = "BDOT")  
-      
 zeropop_pa <- tm_shape(results_sf) +
   tm_fill(col = "gray") +
 tm_shape(results_sf[results_sf$pktadr_pop == 0 &results_sf$POP > 0,]) +
