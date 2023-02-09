@@ -36,4 +36,4 @@ dir; skrypty obejmujące kolejne etapy pracy
 
 ### main.R
 
-script; zawieraja niezbędne elementy wszystkich etapów do uzyskania wyników zawartych w pracy. Pozbawione komentarzy, pełni rolę streszczenia zawartości katalogu *scripts*
+script; zawiera niezbędne elementy wszystkich etapów do uzyskania wyników zawartych w pracy.
