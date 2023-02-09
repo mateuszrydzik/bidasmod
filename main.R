@@ -208,6 +208,49 @@ data.frame(
   AWI=c(mpe(results$awi_err), rmse(results$awi_err), r2(results$POP, results$awi_err)),
   row.names = c("MPE", "RMSE", "R2"))
 
+# Wykresy rozrzutu między estymowaną a obserwowaną populacją
+bdot <- ggplot(results, aes(x = bdot_pop, y = POP)) +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość", breaks=c(25, 50, 100, 200)) +
+  theme_linedraw() +
+  scale_x_continuous(limits = c(0, 2000)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "BDOT", y = "Obserwacje", x = "Estymacje")
+
+clc <- ggplot(results, aes(x = clc_pop, y = POP)) +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość", breaks=c(25, 50, 100, 200)) +
+  theme_linedraw() +
+  scale_x_continuous(limits = c(0, 2000)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Corine Land Cover", y = "Obserwacje", x = "Estymacje")
+
+pa <- ggplot(results, aes(x = pktadr_pop, y = POP)) +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość", breaks=c(25, 50, 100, 200)) +
+  theme_linedraw() +
+  scale_x_continuous(limits = c(0, 2000)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Punkty adresowe", y = "Obserwacje", x = "Estymacje")
+
+ua <- ggplot(results, aes(x = ua_pop, y = POP)) +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość", breaks=c(25, 50, 100, 200)) +
+  theme_linedraw() +
+  scale_x_continuous(limits = c(0, 2000)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Urban Atlas", y = "Obserwacje", x = "Estymacje")
+
+int <- ggplot(results, aes(x = awi_pop, y = POP)) +
+  geom_bin_2d(bins = 30) +
+  scale_fill_binned(name = "Ilość", breaks=c(25, 50, 100, 200)) +
+  theme_linedraw() +
+  scale_x_continuous(limits = c(0, 2000)) +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Metoda pow-wag", y = "Obserwacje", x = "Estymacje")
+
+grid.arrange(bdot, clc, pa, ua, int, ncol=3)
+
 # Dwuwymiarowe histogramy - zaleznosc między populacją a bledem estymacji
 bdot <- ggplot(results, aes(x = bdot_err, y = POP)) +
   geom_bin_2d(bins = 30) +
